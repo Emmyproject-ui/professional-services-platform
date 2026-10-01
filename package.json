@@ -1,0 +1,37 @@
+{
+  "name": "professional-services-platform",
+  "version": "1.0.0",
+  "description": "Complete full-stack web application with React.js, PHP, and MySQL featuring JWT authentication and order management",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && php -S localhost:8000",
+    "install:frontend": "cd frontend && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "start:both": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "test:connection": "curl http://localhost:8000/api/products/index.php",
+    "db:create": "C:\\xampp\\mysql\\bin\\mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS project_database;\"",
+    "db:import": "powershell \"Get-Content database/schema.sql | C:\\xampp\\mysql\\bin\\mysql.exe -u root project_database\"",
+    "admin:create": "cd backend && php utils/create_admin.php",
+    "setup": "npm run db:create && npm run db:import && npm run install:frontend && npm run admin:create"
+  },
+  "keywords": [
+    "react",
+    "php",
+    "mysql",
+    "jwt",
+    "full-stack",
+    "authentication",
+    "rbac",
+    "order-management",
+    "professional-services"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
