@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { ordersAPI } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { Link } from 'react-router-dom';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const { colors } = useTheme();
 
   useEffect(() => {
     fetchOrders();
@@ -25,13 +29,13 @@ const Orders = () => {
   };
 
   const getStatusColor = (status) => {
-    const colors = {
-      pending: '#f39c12',
+    const statusColors = {
+      pending: colors.warning,
       processing: '#3498db',
-      completed: '#27ae60',
-      cancelled: '#e74c3c',
+      completed: colors.success,
+      cancelled: colors.error,
     };
-    return colors[status] || '#95a5a6';
+    return statusColors[status] || '#95a5a6';
   };
 
   const formatDate = (dateString) => {
@@ -42,6 +46,157 @@ const Orders = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const styles = {
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '2rem 1rem',
+    },
+    title: {
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+      color: colors.text,
+      marginBottom: '2rem',
+      fontWeight: '800',
+    },
+    loading: {
+      textAlign: 'center',
+      padding: '4rem',
+      fontSize: '1.2rem',
+      color: colors.textSecondary,
+    },
+    error: {
+      textAlign: 'center',
+      padding: '2rem',
+      color: colors.error,
+      backgroundColor: colors.error + '15',
+      borderRadius: '10px',
+      margin: '2rem auto',
+      maxWidth: '600px',
+    },
+    emptyState: {
+      textAlign: 'center',
+      padding: '4rem 1.5rem',
+      backgroundColor: colors.surface,
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
+    },
+    emptyTitle: {
+      fontSize: '1.8rem',
+      color: colors.text,
+      marginBottom: '1rem',
+    },
+    emptyText: {
+      color: colors.textSecondary,
+      fontSize: '1.1rem',
+      marginBottom: '2rem',
+    },
+    browseButton: {
+      display: 'inline-block',
+      backgroundColor: colors.primary,
+      color: '#fff',
+      padding: '0.85rem 2rem',
+      borderRadius: '25px',
+      textDecoration: 'none',
+      fontSize: '1.05rem',
+      fontWeight: '600',
+      boxShadow: `0 4px 14px ${colors.primary}40`,
+    },
+    ordersList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.5rem',
+    },
+    orderCard: {
+      backgroundColor: colors.surface,
+      padding: '1.75rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
+    },
+    orderHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '1.25rem',
+      flexWrap: 'wrap',
+      gap: '1rem',
+    },
+    orderId: {
+      fontSize: '1.35rem',
+      color: colors.text,
+      marginBottom: '0.25rem',
+      fontWeight: '700',
+    },
+    orderDate: {
+      color: colors.textSecondary,
+      fontSize: '0.9rem',
+    },
+    statusBadge: {
+      display: 'inline-block',
+      padding: '0.4rem 1rem',
+      borderRadius: '20px',
+      color: '#fff',
+      fontSize: '0.85rem',
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    orderItems: {
+      borderTop: `1px solid ${colors.border}`,
+      borderBottom: `1px solid ${colors.border}`,
+      padding: '1.25rem 0',
+      marginBottom: '1.25rem',
+    },
+    itemsTitle: {
+      fontSize: '1.05rem',
+      color: colors.text,
+      marginBottom: '0.75rem',
+      fontWeight: '600',
+    },
+    orderItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '0.5rem 0',
+      gap: '1rem',
+      flexWrap: 'wrap',
+    },
+    itemInfo: {
+      flex: 1,
+    },
+    itemTitle: {
+      color: colors.text,
+      fontWeight: '500',
+      marginBottom: '0.2rem',
+    },
+    itemQuantity: {
+      color: colors.textSecondary,
+      fontSize: '0.9rem',
+    },
+    itemPrice: {
+      color: colors.primary,
+      fontWeight: '700',
+      fontSize: '1.1rem',
+    },
+    orderFooter: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '0.5rem',
+    },
+    totalLabel: {
+      fontSize: '1.1rem',
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    totalAmount: {
+      fontSize: '1.5rem',
+      color: colors.text,
+      fontWeight: '800',
+    },
   };
 
   if (loading) {
@@ -58,13 +213,13 @@ const Orders = () => {
 
       {orders.length === 0 ? (
         <div style={styles.emptyState}>
-          <h2 style={styles.emptyTitle}>No orders yet</h2>
+          <h2 style={styles.emptyTitle}>No orders placed yet</h2>
           <p style={styles.emptyText}>
-            You haven't placed any orders. Browse our services to get started!
+            You haven't placed any orders yet. Browse our professional services to get started!
           </p>
-          <a href="/products" style={styles.browseButton}>
-            Browse Services
-          </a>
+          <Link to="/products" style={styles.browseButton}>
+            Browse Services ➔
+          </Link>
         </div>
       ) : (
         <div style={styles.ordersList}>
@@ -82,13 +237,13 @@ const Orders = () => {
                       backgroundColor: getStatusColor(order.status),
                     }}
                   >
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {order.status}
                   </span>
                 </div>
               </div>
 
               <div style={styles.orderItems}>
-                <h4 style={styles.itemsTitle}>Items:</h4>
+                <h4 style={styles.itemsTitle}>Purchased Services:</h4>
                 {order.product_details.map((item, index) => (
                   <div key={index} style={styles.orderItem}>
                     <div style={styles.itemInfo}>
@@ -114,147 +269,6 @@ const Orders = () => {
       )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '2rem 1rem',
-  },
-  title: {
-    fontSize: '2.5rem',
-    color: '#1a1a2e',
-    marginBottom: '2rem',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '4rem',
-    fontSize: '1.2rem',
-    color: '#666',
-  },
-  error: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#c33',
-    backgroundColor: '#fee',
-    borderRadius: '10px',
-    margin: '2rem auto',
-    maxWidth: '600px',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '4rem',
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  emptyTitle: {
-    fontSize: '2rem',
-    color: '#1a1a2e',
-    marginBottom: '1rem',
-  },
-  emptyText: {
-    color: '#666',
-    fontSize: '1.1rem',
-    marginBottom: '2rem',
-  },
-  browseButton: {
-    display: 'inline-block',
-    backgroundColor: '#16c79a',
-    color: '#fff',
-    padding: '1rem 2rem',
-    borderRadius: '5px',
-    textDecoration: 'none',
-    fontSize: '1.1rem',
-    fontWeight: '500',
-  },
-  ordersList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  orderCard: {
-    backgroundColor: '#fff',
-    padding: '2rem',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  orderHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '1.5rem',
-    flexWrap: 'wrap',
-    gap: '1rem',
-  },
-  orderId: {
-    fontSize: '1.5rem',
-    color: '#1a1a2e',
-    marginBottom: '0.25rem',
-  },
-  orderDate: {
-    color: '#666',
-    fontSize: '0.9rem',
-  },
-  statusBadge: {
-    display: 'inline-block',
-    padding: '0.5rem 1rem',
-    borderRadius: '20px',
-    color: '#fff',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-  },
-  orderItems: {
-    borderTop: '1px solid #eee',
-    borderBottom: '1px solid #eee',
-    padding: '1.5rem 0',
-    marginBottom: '1.5rem',
-  },
-  itemsTitle: {
-    fontSize: '1.1rem',
-    color: '#1a1a2e',
-    marginBottom: '1rem',
-  },
-  orderItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 0',
-    gap: '1rem',
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemTitle: {
-    color: '#333',
-    fontWeight: '500',
-    marginBottom: '0.25rem',
-  },
-  itemQuantity: {
-    color: '#666',
-    fontSize: '0.9rem',
-  },
-  itemPrice: {
-    color: '#16c79a',
-    fontWeight: '600',
-    fontSize: '1.1rem',
-  },
-  orderFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  totalLabel: {
-    fontSize: '1.25rem',
-    color: '#333',
-    fontWeight: '500',
-  },
-  totalAmount: {
-    fontSize: '1.75rem',
-    color: '#1a1a2e',
-    fontWeight: 'bold',
-  },
 };
 
 export default Orders;

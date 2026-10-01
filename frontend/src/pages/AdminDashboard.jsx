@@ -59,20 +59,17 @@ const AdminDashboard = () => {
       const response = await adminAPI.updateOrderStatus(orderId, newStatus);
 
       if (response.data.success) {
-        // Update the order in the list
         setOrders(
           orders.map((order) =>
             order.id === orderId ? { ...order, status: newStatus } : order
           )
         );
 
-        // Refresh statistics
         const statsResponse = await adminAPI.getStatistics();
         if (statsResponse.data.success) {
           setStatistics(statsResponse.data.data);
         }
 
-        // Show success notification
         const notification = document.createElement('div');
         notification.style.cssText = `
           position: fixed;
@@ -89,7 +86,9 @@ const AdminDashboard = () => {
         document.body.appendChild(notification);
 
         setTimeout(() => {
-          document.body.removeChild(notification);
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
         }, 3000);
       }
     } catch (err) {
@@ -102,13 +101,13 @@ const AdminDashboard = () => {
   };
 
   const getStatusColor = (status) => {
-    const colors = {
-      pending: '#f39c12',
+    const statusColors = {
+      pending: colors.warning,
       processing: '#3498db',
-      completed: '#27ae60',
-      cancelled: '#e74c3c',
+      completed: colors.success,
+      cancelled: colors.error,
     };
-    return colors[status] || '#95a5a6';
+    return statusColors[status] || '#95a5a6';
   };
 
   const formatDate = (dateString) => {
@@ -126,7 +125,6 @@ const AdminDashboard = () => {
       maxWidth: '1400px',
       margin: '0 auto',
       padding: '2rem 1rem',
-      backgroundColor: colors.background,
       minHeight: '100vh',
     },
     header: {
@@ -134,27 +132,32 @@ const AdminDashboard = () => {
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: '2rem',
+      flexWrap: 'wrap',
+      gap: '1rem',
     },
     title: {
-      fontSize: '2.5rem',
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
       color: colors.text,
       marginBottom: '0.5rem',
+      fontWeight: '800',
     },
     lastUpdate: {
       fontSize: '0.9rem',
       color: colors.textSecondary,
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem',
+      gap: '0.75rem',
+      flexWrap: 'wrap',
     },
     refreshButton: {
       backgroundColor: colors.primary,
       color: '#fff',
       border: 'none',
-      padding: '0.5rem 1rem',
-      borderRadius: '5px',
+      padding: '0.4rem 1rem',
+      borderRadius: '20px',
       cursor: 'pointer',
-      fontSize: '0.9rem',
+      fontSize: '0.85rem',
+      fontWeight: '600',
     },
     loading: {
       textAlign: 'center',
@@ -174,55 +177,44 @@ const AdminDashboard = () => {
     },
     statsGrid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '1.5rem',
-      marginBottom: '3rem',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+      gap: '1.25rem',
+      marginBottom: '2.5rem',
     },
     statCard: {
       backgroundColor: colors.surface,
-      padding: '2rem',
-      borderRadius: '10px',
-      boxShadow: `0 2px 8px ${colors.shadow}`,
+      padding: '1.75rem 1.25rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
       textAlign: 'center',
+      border: `1px solid ${colors.border}`,
       transition: 'transform 0.2s ease',
     },
-    totalCard: {
-      borderTop: `4px solid ${colors.secondary}`,
-    },
-    pendingCard: {
-      borderTop: '4px solid #f39c12',
-    },
-    processingCard: {
-      borderTop: '4px solid #3498db',
-    },
-    completedCard: {
-      borderTop: '4px solid #27ae60',
-    },
-    cancelledCard: {
-      borderTop: '4px solid #e74c3c',
-    },
     statValue: {
-      fontSize: '2.5rem',
+      fontSize: '2.2rem',
       color: colors.text,
-      marginBottom: '0.5rem',
-      fontWeight: 'bold',
+      marginBottom: '0.4rem',
+      fontWeight: '800',
     },
     statLabel: {
       color: colors.textSecondary,
-      fontSize: '1rem',
+      fontSize: '0.9rem',
       textTransform: 'uppercase',
       letterSpacing: '1px',
+      fontWeight: '600',
     },
     tableSection: {
       backgroundColor: colors.surface,
-      padding: '2rem',
-      borderRadius: '10px',
-      boxShadow: `0 2px 8px ${colors.shadow}`,
+      padding: '1.75rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
     },
     sectionTitle: {
-      fontSize: '1.75rem',
+      fontSize: '1.5rem',
       color: colors.text,
-      marginBottom: '1.5rem',
+      marginBottom: '1.25rem',
+      fontWeight: '700',
     },
     emptyState: {
       textAlign: 'center',
@@ -231,31 +223,36 @@ const AdminDashboard = () => {
       fontSize: '1.1rem',
     },
     tableWrapper: {
+      width: '100%',
       overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
     },
     table: {
       width: '100%',
       borderCollapse: 'collapse',
+      minWidth: '750px',
     },
     tableHeader: {
       backgroundColor: colors.background,
     },
     th: {
-      padding: '1rem',
+      padding: '1rem 0.85rem',
       textAlign: 'left',
-      fontWeight: '600',
+      fontWeight: '700',
       color: colors.text,
       borderBottom: `2px solid ${colors.border}`,
       whiteSpace: 'nowrap',
+      fontSize: '0.9rem',
     },
     tableRow: {
       borderBottom: `1px solid ${colors.border}`,
       transition: 'background-color 0.2s ease',
     },
     td: {
-      padding: '1rem',
+      padding: '1rem 0.85rem',
       color: colors.text,
-      verticalAlign: 'top',
+      verticalAlign: 'middle',
+      fontSize: '0.9rem',
     },
     productsList: {
       display: 'flex',
@@ -263,7 +260,7 @@ const AdminDashboard = () => {
       gap: '0.25rem',
     },
     productItem: {
-      fontSize: '0.9rem',
+      fontSize: '0.85rem',
       color: colors.textSecondary,
     },
     statusBadge: {
@@ -271,18 +268,18 @@ const AdminDashboard = () => {
       padding: '0.35rem 0.75rem',
       borderRadius: '15px',
       color: '#fff',
-      fontSize: '0.85rem',
-      fontWeight: '600',
+      fontSize: '0.8rem',
+      fontWeight: '700',
       whiteSpace: 'nowrap',
     },
     statusSelect: {
-      padding: '0.5rem',
-      borderRadius: '5px',
+      padding: '0.45rem 0.65rem',
+      borderRadius: '8px',
       border: `1px solid ${colors.border}`,
       backgroundColor: colors.surface,
       color: colors.text,
       cursor: 'pointer',
-      fontSize: '0.9rem',
+      fontSize: '0.85rem',
     },
   };
 
@@ -311,23 +308,23 @@ const AdminDashboard = () => {
       {/* Statistics Cards */}
       {statistics && (
         <div style={styles.statsGrid}>
-          <div style={{ ...styles.statCard, ...styles.totalCard }}>
+          <div style={{ ...styles.statCard, borderTop: `4px solid ${colors.primary}` }}>
             <h3 style={styles.statValue}>{statistics.total_orders}</h3>
             <p style={styles.statLabel}>Total Orders</p>
           </div>
-          <div style={{ ...styles.statCard, ...styles.pendingCard }}>
+          <div style={{ ...styles.statCard, borderTop: `4px solid ${colors.warning}` }}>
             <h3 style={styles.statValue}>{statistics.pending_orders}</h3>
             <p style={styles.statLabel}>Pending</p>
           </div>
-          <div style={{ ...styles.statCard, ...styles.processingCard }}>
+          <div style={{ ...styles.statCard, borderTop: '4px solid #3498db' }}>
             <h3 style={styles.statValue}>{statistics.processing_orders}</h3>
             <p style={styles.statLabel}>Processing</p>
           </div>
-          <div style={{ ...styles.statCard, ...styles.completedCard }}>
+          <div style={{ ...styles.statCard, borderTop: `4px solid ${colors.success}` }}>
             <h3 style={styles.statValue}>{statistics.completed_orders}</h3>
             <p style={styles.statLabel}>Completed</p>
           </div>
-          <div style={{ ...styles.statCard, ...styles.cancelledCard }}>
+          <div style={{ ...styles.statCard, borderTop: `4px solid ${colors.error}` }}>
             <h3 style={styles.statValue}>{statistics.cancelled_orders}</h3>
             <p style={styles.statLabel}>Cancelled</p>
           </div>
@@ -338,7 +335,7 @@ const AdminDashboard = () => {
       <div style={styles.tableSection}>
         <h2 style={styles.sectionTitle}>
           Order Management 
-          <span style={{ fontSize: '1rem', fontWeight: 'normal', color: colors.textSecondary }}>
+          <span style={{ fontSize: '0.95rem', fontWeight: 'normal', color: colors.textSecondary, marginLeft: '0.5rem' }}>
             ({orders.length} orders)
           </span>
         </h2>
@@ -385,7 +382,7 @@ const AdminDashboard = () => {
                           backgroundColor: getStatusColor(order.status),
                         }}
                       >
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {order.status}
                       </span>
                     </td>
                     <td style={styles.td}>{formatDate(order.created_at)}</td>

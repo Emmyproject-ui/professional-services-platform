@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,7 @@ const Products = () => {
   const [selectedProducts, setSelectedProducts] = useState({});
 
   const { isAuthenticated } = useAuth();
+  const { colors } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,6 +80,154 @@ const Products = () => {
     return Object.values(selectedProducts).reduce((sum, qty) => sum + qty, 0);
   };
 
+  const styles = {
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '2rem 1rem',
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '2.5rem',
+    },
+    title: {
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+      color: colors.text,
+      marginBottom: '0.5rem',
+      fontWeight: '800',
+    },
+    subtitle: {
+      color: colors.textSecondary,
+      fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
+    },
+    cartSummary: {
+      backgroundColor: colors.primary,
+      color: '#fff',
+      padding: '1.2rem 1.5rem',
+      borderRadius: '12px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '2rem',
+      flexWrap: 'wrap',
+      gap: '1rem',
+      boxShadow: `0 8px 20px ${colors.primary}40`,
+    },
+    cartText: {
+      fontSize: '1.1rem',
+      fontWeight: '600',
+    },
+    checkoutButton: {
+      backgroundColor: '#fff',
+      color: colors.primary,
+      padding: '0.75rem 1.5rem',
+      borderRadius: '25px',
+      border: 'none',
+      fontSize: '1rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      transition: 'transform 0.2s ease',
+    },
+    productsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '1.75rem',
+    },
+    productCard: {
+      backgroundColor: colors.surface,
+      padding: '2rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      display: 'flex',
+      flexDirection: 'column',
+      border: `1px solid ${colors.border}`,
+      transition: 'all 0.3s ease',
+    },
+    productTitle: {
+      fontSize: '1.35rem',
+      color: colors.text,
+      marginBottom: '0.75rem',
+      fontWeight: '700',
+    },
+    productDescription: {
+      color: colors.textSecondary,
+      lineHeight: '1.6',
+      marginBottom: '1.25rem',
+      flex: 1,
+      fontSize: '0.95rem',
+    },
+    productPrice: {
+      fontSize: '1.6rem',
+      color: colors.primary,
+      fontWeight: '800',
+      marginBottom: '1.25rem',
+    },
+    productActions: {
+      marginTop: 'auto',
+    },
+    addButton: {
+      width: '100%',
+      backgroundColor: colors.primary,
+      color: '#fff',
+      padding: '0.85rem',
+      borderRadius: '10px',
+      border: 'none',
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      boxShadow: `0 4px 14px ${colors.primary}35`,
+      transition: 'all 0.2s ease',
+    },
+    quantityControl: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '1rem',
+    },
+    quantityButton: {
+      backgroundColor: colors.secondary,
+      color: '#fff',
+      width: '42px',
+      height: '42px',
+      borderRadius: '8px',
+      border: 'none',
+      fontSize: '1.4rem',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    quantity: {
+      fontSize: '1.3rem',
+      fontWeight: 'bold',
+      minWidth: '40px',
+      textAlign: 'center',
+      color: colors.text,
+    },
+    loading: {
+      textAlign: 'center',
+      padding: '4rem',
+      fontSize: '1.2rem',
+      color: colors.textSecondary,
+    },
+    error: {
+      textAlign: 'center',
+      padding: '2rem',
+      color: colors.error,
+      backgroundColor: colors.error + '15',
+      borderRadius: '10px',
+      margin: '2rem auto',
+      maxWidth: '600px',
+    },
+    emptyState: {
+      textAlign: 'center',
+      padding: '4rem',
+      color: colors.textSecondary,
+      fontSize: '1.1rem',
+    },
+  };
+
   if (loading) {
     return <div style={styles.loading}>Loading services...</div>;
   }
@@ -90,7 +240,7 @@ const Products = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Our Professional Services</h1>
-        <p style={styles.subtitle}>Browse and select from our range of professional services</p>
+        <p style={styles.subtitle}>Browse and select from our range of professional digital services</p>
       </div>
 
       {getTotalItems() > 0 && (
@@ -99,14 +249,25 @@ const Products = () => {
             Selected: {getTotalItems()} item(s)
           </span>
           <button onClick={handleCheckout} style={styles.checkoutButton}>
-            Proceed to Checkout
+            Proceed to Checkout ➔
           </button>
         </div>
       )}
 
       <div style={styles.productsGrid}>
         {products.map((product) => (
-          <div key={product.id} style={styles.productCard}>
+          <div 
+            key={product.id} 
+            style={styles.productCard}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-6px)';
+              e.currentTarget.style.boxShadow = `0 12px 30px ${colors.shadow}`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = `0 8px 24px ${colors.shadow}`;
+            }}
+          >
             <h3 style={styles.productTitle}>{product.title}</h3>
             <p style={styles.productDescription}>{product.description}</p>
             <p style={styles.productPrice}>
@@ -154,140 +315,6 @@ const Products = () => {
       )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '2rem 1rem',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '2rem',
-  },
-  title: {
-    fontSize: '2.5rem',
-    color: '#1a1a2e',
-    marginBottom: '0.5rem',
-  },
-  subtitle: {
-    color: '#666',
-    fontSize: '1.1rem',
-  },
-  cartSummary: {
-    backgroundColor: '#16c79a',
-    color: '#fff',
-    padding: '1rem',
-    borderRadius: '10px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2rem',
-    flexWrap: 'wrap',
-    gap: '1rem',
-  },
-  cartText: {
-    fontSize: '1.1rem',
-    fontWeight: '500',
-  },
-  checkoutButton: {
-    backgroundColor: '#fff',
-    color: '#16c79a',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '5px',
-    border: 'none',
-    fontSize: '1rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  productsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '2rem',
-  },
-  productCard: {
-    backgroundColor: '#fff',
-    padding: '2rem',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  productTitle: {
-    fontSize: '1.5rem',
-    color: '#1a1a2e',
-    marginBottom: '1rem',
-  },
-  productDescription: {
-    color: '#666',
-    lineHeight: '1.6',
-    marginBottom: '1rem',
-    flex: 1,
-  },
-  productPrice: {
-    fontSize: '1.75rem',
-    color: '#16c79a',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-  },
-  productActions: {
-    marginTop: 'auto',
-  },
-  addButton: {
-    width: '100%',
-    backgroundColor: '#16c79a',
-    color: '#fff',
-    padding: '0.75rem',
-    borderRadius: '5px',
-    border: 'none',
-    fontSize: '1rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  quantityControl: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '1rem',
-  },
-  quantityButton: {
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-    width: '40px',
-    height: '40px',
-    borderRadius: '5px',
-    border: 'none',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-  },
-  quantity: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    minWidth: '40px',
-    textAlign: 'center',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '4rem',
-    fontSize: '1.2rem',
-    color: '#666',
-  },
-  error: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#c33',
-    backgroundColor: '#fee',
-    borderRadius: '10px',
-    margin: '2rem auto',
-    maxWidth: '600px',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '4rem',
-    color: '#666',
-    fontSize: '1.1rem',
-  },
 };
 
 export default Products;
