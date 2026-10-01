@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: professional_services_app
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=project_database
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - JWT_SECRET=dev_jwt_secret_key_123456789_change_in_prod
+      - FRONTEND_URL=http://localhost:8080
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: professional_services_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: project_database
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+volumes:
+  db_data:
