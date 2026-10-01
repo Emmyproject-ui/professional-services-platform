@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ordersAPI } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -11,19 +12,20 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const { colors } = useTheme();
+
   useEffect(() => {
     if (!items || !products) {
       navigate('/products');
       return;
     }
 
-    // Build order items with product details
     const itemsWithDetails = items.map((item) => {
       const product = products.find((p) => p.id === item.product_id);
       return {
         ...item,
         product,
-        lineTotal: product.price * item.quantity,
+        lineTotal: (product ? product.price : 0) * item.quantity,
       };
     });
 
@@ -45,7 +47,6 @@ const Checkout = () => {
       });
 
       if (response.data.success) {
-        // Order created successfully
         alert('Order placed successfully!');
         navigate('/orders');
       }
@@ -59,8 +60,163 @@ const Checkout = () => {
   };
 
   if (orderItems.length === 0) {
-    return null; // Will redirect via useEffect
+    return null;
   }
+
+  const styles = {
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '2rem 1rem',
+    },
+    title: {
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+      color: colors.text,
+      marginBottom: '2rem',
+      fontWeight: '800',
+    },
+    error: {
+      backgroundColor: colors.error + '20',
+      color: colors.error,
+      padding: '1rem',
+      borderRadius: '8px',
+      marginBottom: '1.5rem',
+      border: `1px solid ${colors.error}40`,
+    },
+    content: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      gap: '2rem',
+    },
+    orderSummary: {
+      backgroundColor: colors.surface,
+      padding: '2rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
+    },
+    sectionTitle: {
+      fontSize: '1.5rem',
+      color: colors.text,
+      marginBottom: '1.5rem',
+      fontWeight: '700',
+    },
+    itemsList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.25rem',
+    },
+    item: {
+      padding: '1.25rem',
+      backgroundColor: colors.background,
+      borderRadius: '12px',
+      border: `1px solid ${colors.border}`,
+    },
+    itemDetails: {
+      marginBottom: '0.75rem',
+    },
+    itemTitle: {
+      fontSize: '1.15rem',
+      color: colors.text,
+      marginBottom: '0.35rem',
+      fontWeight: '600',
+    },
+    itemDescription: {
+      color: colors.textSecondary,
+      fontSize: '0.9rem',
+    },
+    itemPricing: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '0.5rem',
+      marginTop: '0.75rem',
+      paddingTop: '0.75rem',
+      borderTop: `1px dashed ${colors.border}`,
+    },
+    itemQuantity: {
+      color: colors.textSecondary,
+      fontSize: '0.9rem',
+    },
+    itemPrice: {
+      color: colors.textSecondary,
+      fontSize: '0.9rem',
+    },
+    itemTotal: {
+      fontSize: '1.15rem',
+      fontWeight: 'bold',
+      color: colors.primary,
+    },
+    totalSection: {
+      marginTop: '2rem',
+      paddingTop: '1.5rem',
+      borderTop: `2px solid ${colors.border}`,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '0.5rem',
+    },
+    totalLabel: {
+      fontSize: '1.3rem',
+      color: colors.text,
+      fontWeight: '600',
+    },
+    totalAmount: {
+      fontSize: '1.8rem',
+      color: colors.primary,
+      fontWeight: '800',
+    },
+    actionSection: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.25rem',
+    },
+    infoBox: {
+      backgroundColor: colors.surface,
+      padding: '1.5rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
+    },
+    infoTitle: {
+      fontSize: '1.2rem',
+      color: colors.text,
+      marginBottom: '1rem',
+      fontWeight: '700',
+    },
+    infoText: {
+      color: colors.textSecondary,
+      lineHeight: '1.6',
+      marginBottom: '0.75rem',
+      fontSize: '0.95rem',
+    },
+    placeOrderButton: {
+      backgroundColor: colors.primary,
+      color: '#fff',
+      padding: '1rem',
+      borderRadius: '25px',
+      border: 'none',
+      fontSize: '1.1rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      boxShadow: `0 4px 14px ${colors.primary}40`,
+      transition: 'all 0.2s ease',
+    },
+    backButton: {
+      backgroundColor: colors.surface,
+      color: colors.text,
+      padding: '0.9rem',
+      borderRadius: '25px',
+      border: `2px solid ${colors.border}`,
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      textAlign: 'center',
+      transition: 'all 0.2s ease',
+    },
+  };
 
   return (
     <div style={styles.container}>
@@ -76,13 +232,13 @@ const Checkout = () => {
             {orderItems.map((item, index) => (
               <div key={index} style={styles.item}>
                 <div style={styles.itemDetails}>
-                  <h3 style={styles.itemTitle}>{item.product.title}</h3>
-                  <p style={styles.itemDescription}>{item.product.description}</p>
+                  <h3 style={styles.itemTitle}>{item.product?.title}</h3>
+                  <p style={styles.itemDescription}>{item.product?.description}</p>
                 </div>
                 <div style={styles.itemPricing}>
                   <p style={styles.itemQuantity}>Qty: {item.quantity}</p>
                   <p style={styles.itemPrice}>
-                    ₦{parseFloat(item.product.price).toLocaleString()} each
+                    ₦{parseFloat(item.product?.price || 0).toLocaleString()} each
                   </p>
                   <p style={styles.itemTotal}>
                     ₦{parseFloat(item.lineTotal).toLocaleString()}
@@ -117,7 +273,7 @@ const Checkout = () => {
             disabled={loading}
             style={styles.placeOrderButton}
           >
-            {loading ? 'Placing Order...' : 'Place Order'}
+            {loading ? 'Placing Order...' : 'Confirm & Place Order ➔'}
           </button>
 
           <button onClick={() => navigate('/products')} style={styles.backButton}>
@@ -127,145 +283,6 @@ const Checkout = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '2rem 1rem',
-  },
-  title: {
-    fontSize: '2.5rem',
-    color: '#1a1a2e',
-    marginBottom: '2rem',
-  },
-  error: {
-    backgroundColor: '#fee',
-    color: '#c33',
-    padding: '1rem',
-    borderRadius: '5px',
-    marginBottom: '1rem',
-  },
-  content: {
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
-    gap: '2rem',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-    },
-  },
-  orderSummary: {
-    backgroundColor: '#fff',
-    padding: '2rem',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  sectionTitle: {
-    fontSize: '1.75rem',
-    color: '#1a1a2e',
-    marginBottom: '1.5rem',
-  },
-  itemsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  item: {
-    padding: '1.5rem',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '8px',
-  },
-  itemDetails: {
-    marginBottom: '1rem',
-  },
-  itemTitle: {
-    fontSize: '1.25rem',
-    color: '#1a1a2e',
-    marginBottom: '0.5rem',
-  },
-  itemDescription: {
-    color: '#666',
-    fontSize: '0.9rem',
-  },
-  itemPricing: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  },
-  itemQuantity: {
-    color: '#666',
-  },
-  itemPrice: {
-    color: '#666',
-  },
-  itemTotal: {
-    fontSize: '1.25rem',
-    fontWeight: 'bold',
-    color: '#16c79a',
-  },
-  totalSection: {
-    marginTop: '2rem',
-    paddingTop: '2rem',
-    borderTop: '2px solid #ddd',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  totalLabel: {
-    fontSize: '1.5rem',
-    color: '#1a1a2e',
-  },
-  totalAmount: {
-    fontSize: '2rem',
-    color: '#16c79a',
-    fontWeight: 'bold',
-  },
-  actionSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  infoBox: {
-    backgroundColor: '#fff',
-    padding: '1.5rem',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  infoTitle: {
-    fontSize: '1.25rem',
-    color: '#1a1a2e',
-    marginBottom: '1rem',
-  },
-  infoText: {
-    color: '#666',
-    lineHeight: '1.6',
-    marginBottom: '0.75rem',
-  },
-  placeOrderButton: {
-    backgroundColor: '#16c79a',
-    color: '#fff',
-    padding: '1rem',
-    borderRadius: '5px',
-    border: 'none',
-    fontSize: '1.1rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
-  },
-  backButton: {
-    backgroundColor: '#fff',
-    color: '#1a1a2e',
-    padding: '1rem',
-    borderRadius: '5px',
-    border: '2px solid #1a1a2e',
-    fontSize: '1rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.3s',
-  },
 };
 
 export default Checkout;
