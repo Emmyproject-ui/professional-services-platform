@@ -24,7 +24,6 @@ const Register = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error for this field
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: null });
     }
@@ -35,9 +34,8 @@ const Register = () => {
       ...formData,
       [field]: e.target.value,
     });
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: null });
+    if (errors[field] || errors.password_confirmation) {
+      setErrors({ ...errors, [field]: null, password_confirmation: null });
     }
   };
 
@@ -45,6 +43,27 @@ const Register = () => {
     e.preventDefault();
     setErrors({});
     setMessage('');
+
+    // Client-side pre-validation
+    const newErrors = {};
+    if (!formData.name.trim()) {
+      newErrors.name = 'Full name is required';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email address is required';
+    }
+    if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
+    if (formData.password !== formData.passwordConfirmation) {
+      newErrors.passwordConfirmation = 'Password confirmation does not match';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     setLoading(true);
 
     const result = await register(
@@ -58,13 +77,17 @@ const Register = () => {
       setMessage('Registration successful! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
+      }, 1500);
     } else {
       if (result.errors) {
-        setErrors(result.errors);
-      } else {
-        setMessage(result.message);
+        // Normalize snake_case keys from backend to camelCase if needed
+        const mappedErrors = { ...result.errors };
+        if (result.errors.password_confirmation) {
+          mappedErrors.passwordConfirmation = result.errors.password_confirmation;
+        }
+        setErrors(mappedErrors);
       }
+      setMessage(result.message || 'Registration failed. Please check the form.');
     }
 
     setLoading(false);
@@ -78,9 +101,10 @@ const Register = () => {
     },
     formCard: {
       backgroundColor: colors.surface,
-      padding: '2rem',
-      borderRadius: '10px',
-      boxShadow: `0 2px 8px ${colors.shadow}`,
+      padding: '2.25rem 2rem',
+      borderRadius: '16px',
+      boxShadow: `0 8px 24px ${colors.shadow}`,
+      border: `1px solid ${colors.border}`,
       transition: 'all 0.3s ease',
     },
     title: {
@@ -88,76 +112,89 @@ const Register = () => {
       color: colors.text,
       marginBottom: '0.5rem',
       textAlign: 'center',
+      fontWeight: '800',
     },
     subtitle: {
       color: colors.textSecondary,
       textAlign: 'center',
       marginBottom: '2rem',
+      fontSize: '0.95rem',
     },
-    error: {
-      backgroundColor: colors.error + '20',
+    errorBanner: {
+      backgroundColor: colors.error + '15',
       color: colors.error,
-      padding: '1rem',
-      borderRadius: '5px',
-      marginBottom: '1rem',
+      padding: '0.9rem 1.25rem',
+      borderRadius: '10px',
+      marginBottom: '1.25rem',
       border: `1px solid ${colors.error}40`,
+      fontSize: '0.95rem',
+      fontWeight: '500',
     },
-    success: {
-      backgroundColor: colors.success + '20',
+    successBanner: {
+      backgroundColor: colors.success + '15',
       color: colors.success,
-      padding: '1rem',
-      borderRadius: '5px',
-      marginBottom: '1rem',
+      padding: '0.9rem 1.25rem',
+      borderRadius: '10px',
+      marginBottom: '1.25rem',
       border: `1px solid ${colors.success}40`,
+      fontSize: '0.95rem',
+      fontWeight: '600',
     },
     form: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '1.5rem',
+      gap: '1.25rem',
     },
     formGroup: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '0.5rem',
+      gap: '0.4rem',
     },
     label: {
       color: colors.text,
-      fontWeight: '500',
+      fontWeight: '600',
+      fontSize: '0.95rem',
     },
     input: {
-      padding: '0.75rem',
+      padding: '0.85rem 1rem',
       border: `1px solid ${colors.border}`,
-      borderRadius: '5px',
+      borderRadius: '10px',
       fontSize: '1rem',
       backgroundColor: colors.surface,
       color: colors.text,
-      transition: 'border-color 0.3s ease',
+      transition: 'border-color 0.2s ease',
+      width: '100%',
     },
     fieldError: {
       color: colors.error,
-      fontSize: '0.875rem',
+      fontSize: '0.85rem',
+      marginTop: '0.2rem',
+      fontWeight: '500',
     },
     button: {
       backgroundColor: colors.primary,
       color: '#fff',
       padding: '1rem',
-      borderRadius: '5px',
+      borderRadius: '25px',
       border: 'none',
-      fontSize: '1.1rem',
-      fontWeight: '500',
+      fontSize: '1.05rem',
+      fontWeight: '700',
       cursor: 'pointer',
-      transition: 'background-color 0.3s',
+      transition: 'all 0.2s ease',
+      boxShadow: `0 4px 14px ${colors.primary}40`,
+      marginTop: '0.5rem',
       opacity: loading ? 0.7 : 1,
     },
     footer: {
       textAlign: 'center',
       marginTop: '1.5rem',
       color: colors.textSecondary,
+      fontSize: '0.95rem',
     },
     link: {
       color: colors.primary,
       textDecoration: 'none',
-      fontWeight: '500',
+      fontWeight: '600',
     },
   };
 
@@ -168,7 +205,7 @@ const Register = () => {
         <p style={styles.subtitle}>Join our platform to access professional services</p>
 
         {message && (
-          <div style={message.includes('successful') ? styles.success : styles.error}>
+          <div style={message.includes('successful') ? styles.successBanner : styles.errorBanner}>
             {message}
           </div>
         )}
@@ -182,21 +219,27 @@ const Register = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(errors.name ? { borderColor: colors.error } : {})
+              }}
               placeholder="Enter your full name"
             />
             {errors.name && <span style={styles.fieldError}>{errors.name}</span>}
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
+            <label style={styles.label}>Email Address</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(errors.email ? { borderColor: colors.error } : {})
+              }}
               placeholder="Enter your email"
             />
             {errors.email && <span style={styles.fieldError}>{errors.email}</span>}
@@ -208,8 +251,11 @@ const Register = () => {
               value={formData.password}
               onChange={(e) => handlePasswordChange(e, 'password')}
               required
-              style={styles.input}
-              placeholder="Enter your password (min 8 characters)"
+              style={{
+                ...styles.input,
+                ...(errors.password ? { borderColor: colors.error } : {})
+              }}
+              placeholder="Min. 8 characters"
             />
             {errors.password && <span style={styles.fieldError}>{errors.password}</span>}
           </div>
@@ -220,16 +266,19 @@ const Register = () => {
               value={formData.passwordConfirmation}
               onChange={(e) => handlePasswordChange(e, 'passwordConfirmation')}
               required
-              style={styles.input}
-              placeholder="Confirm your password"
+              style={{
+                ...styles.input,
+                ...(errors.passwordConfirmation ? { borderColor: colors.error } : {})
+              }}
+              placeholder="Re-enter your password"
             />
-            {errors.password_confirmation && (
-              <span style={styles.fieldError}>{errors.password_confirmation}</span>
+            {errors.passwordConfirmation && (
+              <span style={styles.fieldError}>{errors.passwordConfirmation}</span>
             )}
           </div>
 
           <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? 'Creating Account...' : 'Register Account'}
           </button>
         </form>
 

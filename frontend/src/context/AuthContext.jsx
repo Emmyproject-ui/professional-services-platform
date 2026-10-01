@@ -43,9 +43,9 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
       }
       
-      return { success: false, message: response.data.message };
+      return { success: false, message: response.data.message || 'Login failed' };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
       return { success: false, message };
     }
   };
@@ -60,13 +60,13 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (response.data.success) {
-        return { success: true, message: response.data.message };
+        return { success: true, message: response.data.message || 'Registration successful' };
       }
       
-      return { success: false, message: response.data.message };
+      return { success: false, message: response.data.message || 'Registration failed' };
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
-      const errors = error.response?.data?.details || null;
+      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      const errors = error.response?.data?.details || error.response?.data?.errors || null;
       return { success: false, message, errors };
     }
   };
