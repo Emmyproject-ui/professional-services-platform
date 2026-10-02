@@ -68,17 +68,24 @@ Render Web Services need a database to store data. You can set up a MySQL databa
 ---
 
 ### Step 4: Configure Environment Variables on Render
-Under **Environment Variables** in your Render service dashboard, add the following variables:
+Under **Environment Variables** (or the **Environment** tab) in your Render service dashboard, add the following variables:
 
-| Key | Example Value | Description |
+| Key | Value | Description |
 |---|---|---|
-| `DB_HOST` | `your-db-host.aivencloud.com` | Database hostname |
-| `DB_NAME` | `project_database` | Database name |
+| `DB_HOST` | `mysql-22d8fa3d-professional-services-platform.i.aivencloud.com` | Aiven database host |
+| `DB_PORT` | `26844` | Aiven database port |
+| `DB_NAME` | `defaultdb` | Database name |
 | `DB_USER` | `avnadmin` | Database username |
-| `DB_PASSWORD` | `your_secure_db_password` | Database password |
-| `JWT_SECRET` | `super_secret_jwt_key_987654321` | Secret key for signing JWT tokens |
-| `ADMIN_EMAIL` | `admin@example.com` | Initial admin email |
-| `ADMIN_PASSWORD` | `SecureAdmin@123` | Initial admin password |
+| `DB_PASSWORD` | `your_aiven_password_here` | Database password (from Aiven console) |
+
+| `DB_SSL` | `true` | Enables SSL for Aiven |
+| `JWT_SECRET` | `my_super_secret_jwt_key_change_this_in_production_2024` | Secret key for JWT auth |
+| `JWT_EXPIRATION` | `86400` | Token expiration (24h) |
+| `FRONTEND_URL` | `*` | Allowed CORS origin |
+| `ADMIN_EMAIL` | `admin@example.com` | Admin login email |
+| `ADMIN_PASSWORD` | `Admin@12345` | Admin login password |
+| `ADMIN_NAME` | `System Administrator` | Admin display name |
+
 
 ---
 
