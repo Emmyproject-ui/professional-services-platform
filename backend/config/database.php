@@ -35,6 +35,9 @@ class Database {
             // Enable SSL if required (e.g. Aiven cloud databases)
             if ($useSSL) {
                 $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+                if (file_exists('/etc/ssl/certs/ca-certificates.crt')) {
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
+                }
             }
 
             $this->connection = new PDO($dsn, $username, $password, $options);
@@ -44,7 +47,7 @@ class Database {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Database connection failed',
+                'message' => 'Database connection failed: ' . $e->getMessage(),
                 'error'   => 'DATABASE_CONNECTION_ERROR'
             ]);
             exit;
