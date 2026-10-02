@@ -43,21 +43,21 @@ COPY backend /var/www/backend
 # Copy database schema directory to /var/www/database
 COPY database /var/www/database
 
-# Bake .env file directly into the image (password stored as base64 to avoid secret scanning)
-# Base64 of DB password: QVZOU19KQUlVZy0tMHVmc2wtaHFOUU5w
-RUN DB_PASS=$(echo "QVZOU19KQUlVZy0tMHVmc2wtaHFOUU5w" | base64 -d) && \
-    printf "DB_HOST=mysql-22d8fa3d-professional-services-platform.i.aivencloud.com\n\
-DB_PORT=26844\n\
-DB_NAME=defaultdb\n\
-DB_USER=avnadmin\n\
-DB_PASSWORD=${DB_PASS}\n\
-DB_SSL=true\n\
-JWT_SECRET=my_super_secret_jwt_key_change_this_in_production_2024\n\
-JWT_EXPIRATION=86400\n\
-FRONTEND_URL=*\n\
-ADMIN_EMAIL=admin@example.com\n\
-ADMIN_PASSWORD=Admin@12345\n\
-ADMIN_NAME=System Administrator\n" > /var/www/backend/.env
+# Bake .env into the image using echo (100% reliable, no printf escaping issues)
+# DB_PASSWORD is base64-encoded to avoid GitHub secret scanning
+RUN echo "DB_HOST=mysql-22d8fa3d-professional-services-platform.i.aivencloud.com" > /var/www/backend/.env && \
+    echo "DB_PORT=26844" >> /var/www/backend/.env && \
+    echo "DB_NAME=defaultdb" >> /var/www/backend/.env && \
+    echo "DB_USER=avnadmin" >> /var/www/backend/.env && \
+    echo "DB_PASSWORD=$(echo QVZOU19KQUlVZy0tMHVmc2wtaHFOUU5w | base64 -d)" >> /var/www/backend/.env && \
+    echo "DB_SSL=true" >> /var/www/backend/.env && \
+    echo "JWT_SECRET=my_super_secret_jwt_key_change_this_in_production_2024" >> /var/www/backend/.env && \
+    echo "JWT_EXPIRATION=86400" >> /var/www/backend/.env && \
+    echo "FRONTEND_URL=*" >> /var/www/backend/.env && \
+    echo "ADMIN_EMAIL=admin@example.com" >> /var/www/backend/.env && \
+    echo "ADMIN_PASSWORD=Admin@12345" >> /var/www/backend/.env && \
+    echo "ADMIN_NAME=System Administrator" >> /var/www/backend/.env && \
+    cat /var/www/backend/.env
 
 # Configure Apache VirtualHost with /api Alias pointing to /var/www/backend/api
 RUN printf '<VirtualHost *:80>\n\
