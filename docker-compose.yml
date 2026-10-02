@@ -10,11 +10,16 @@ services:
       - "8080:80"
     environment:
       - DB_HOST=db
+      - DB_PORT=3306
       - DB_NAME=project_database
       - DB_USER=root
       - DB_PASSWORD=rootpassword
       - JWT_SECRET=dev_jwt_secret_key_123456789_change_in_prod
-      - FRONTEND_URL=http://localhost:8080
+      - JWT_EXPIRATION=86400
+      - FRONTEND_URL=*
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_PASSWORD=Admin@12345
+      - ADMIN_NAME=System Administrator
     depends_on:
       - db
 

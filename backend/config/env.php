@@ -34,5 +34,14 @@ function loadEnv($path) {
     }
 }
 
-// Load .env file
+// Also copy existing system environment variables (from Docker/Render) into $_ENV
+foreach (['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_SSL', 'JWT_SECRET', 'JWT_EXPIRATION', 'FRONTEND_URL', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'ADMIN_NAME'] as $var) {
+    $val = getenv($var);
+    if ($val !== false && !isset($_ENV[$var])) {
+        $_ENV[$var] = $val;
+    }
+}
+
+// Load .env file (for local development)
 loadEnv(__DIR__ . '/../.env');
+

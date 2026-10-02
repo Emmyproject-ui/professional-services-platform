@@ -14,12 +14,13 @@ class Database {
 
     private function connect() {
         try {
-            $host = $_ENV['DB_HOST'] ?? 'localhost';
-            $port = $_ENV['DB_PORT'] ?? '3306';
-            $dbname = $_ENV['DB_NAME'] ?? 'project_database';
-            $username = $_ENV['DB_USER'] ?? 'root';
-            $password = $_ENV['DB_PASSWORD'] ?? '';
-            $useSSL = filter_var($_ENV['DB_SSL'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
+            $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost';
+            $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: '3306';
+            $dbname = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'project_database';
+            $username = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'root';
+            $password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: '';
+            $useSSL = filter_var($_ENV['DB_SSL'] ?? getenv('DB_SSL') ?: 'false', FILTER_VALIDATE_BOOLEAN);
+
 
             $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
 

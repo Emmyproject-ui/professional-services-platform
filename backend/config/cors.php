@@ -7,8 +7,13 @@ function configureCORS() {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
     $frontendUrl = $_ENV['FRONTEND_URL'] ?? '';
 
-    // If FRONTEND_URL is explicitly set and not '*', use it; otherwise echo origin dynamically
-    $allowedOrigin = ($frontendUrl && $frontendUrl !== '*') ? $frontendUrl : $origin;
+    // If FRONTEND_URL is '*' or empty, echo back the request origin (allow all)
+    // This is needed because credentials=true is incompatible with literal '*' origin header
+    if (!$frontendUrl || $frontendUrl === '*') {
+        $allowedOrigin = $origin;
+    } else {
+        $allowedOrigin = $frontendUrl;
+    }
 
     header("Access-Control-Allow-Origin: {$allowedOrigin}");
     header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");

@@ -13,6 +13,7 @@ COPY frontend/ ./
 ENV VITE_API_URL=/api
 RUN npm run build
 
+
 # ==========================================
 # Stage 2: Apache + PHP Web Server
 # ==========================================
@@ -24,6 +25,9 @@ RUN docker-php-ext-install pdo pdo_mysql
 # Enable Apache mod_rewrite & mod_headers
 RUN a2enmod rewrite headers
 
+# Enable AllowOverride so .htaccess files are respected in all directories
+RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
+
 # Set document root
 WORKDIR /var/www/html
 
@@ -33,12 +37,15 @@ COPY --from=frontend-builder /app/dist /var/www/html
 # Copy backend PHP API into /var/www/html/api
 COPY backend /var/www/html/api
 
-# Add Apache URL rewriting for React SPA client routes and PHP API routing
-RUN echo '<IfModule mod_rewrite.c>\n\
+# Root .htaccess: SPA routing for React — BUT exclude /api paths so PHP is served
+RUN printf '<IfModule mod_rewrite.c>\n\
   RewriteEngine On\n\
   RewriteBase /\n\
-  RewriteCond %{REQUEST_FILENAME} !-f\n\
-  RewriteCond %{REQUEST_FILENAME} !-d\n\
+  # Do NOT rewrite /api requests - let Apache serve PHP files directly\n\
+  RewriteRule ^api(/.*)?$ - [L]\n\
+  # For all other paths: if not a real file or directory, serve index.html (React SPA)\n\
+  RewriteCond %%{REQUEST_FILENAME} !-f\n\
+  RewriteCond %%{REQUEST_FILENAME} !-d\n\
   RewriteRule ^ index.html [L]\n\
 </IfModule>' > /var/www/html/.htaccess
 
