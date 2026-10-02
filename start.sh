@@ -19,6 +19,8 @@ ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin@12345}"
 ADMIN_NAME="${ADMIN_NAME:-System Administrator}"
 
+export DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD DB_SSL JWT_SECRET JWT_EXPIRATION FRONTEND_URL ADMIN_EMAIL ADMIN_PASSWORD ADMIN_NAME
+
 # Write .env file for backend so PHP always has credentials
 cat <<EOF > /var/www/backend/.env
 DB_HOST=$DB_HOST
@@ -37,9 +39,12 @@ EOF
 
 echo "Backend .env configured."
 
-# Wait briefly for database to be available, then create admin user if not exists
+# Wait briefly for database to be available, then initialize schema & create admin
 echo "Waiting for database..."
-sleep 3
+sleep 2
+
+echo "Initializing database tables (if needed)..."
+php /var/www/backend/utils/init_db.php || echo "Database initialization skipped"
 
 echo "Creating admin user (if not exists)..."
 php /var/www/backend/utils/create_admin.php || echo "Admin creation skipped"

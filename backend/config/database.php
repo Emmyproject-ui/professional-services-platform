@@ -1,12 +1,13 @@
 <?php
 /**
  * Database Configuration and Connection
- * Supports both local MySQL and Aiven cloud MySQL (SSL)
  */
 
+require_once __DIR__ . '/env.php';
+
 class Database {
-    private static $instance = null;
-    private $connection;
+    private static ?self $instance = null;
+    private ?PDO $connection = null;
 
     private function __construct() {
         $this->connect();

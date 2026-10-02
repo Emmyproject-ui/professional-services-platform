@@ -93,13 +93,23 @@ class JWT {
      * Extract token from Authorization header
      */
     public static function getBearerToken() {
-        $headers = getallheaders();
-        
-        if (isset($headers['Authorization'])) {
-            $matches = [];
-            if (preg_match('/Bearer\s+(.*)$/i', $headers['Authorization'], $matches)) {
-                return $matches[1];
+        // Check $_SERVER first (works across Apache, Nginx, PHP built-in server)
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] 
+            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] 
+            ?? null;
+
+        if (!$authHeader && function_exists('getallheaders')) {
+            $headers = getallheaders();
+            foreach ($headers as $key => $value) {
+                if (strcasecmp($key, 'Authorization') === 0) {
+                    $authHeader = $value;
+                    break;
+                }
             }
+        }
+        
+        if ($authHeader && preg_match('/Bearer\s+(.*)$/i', trim($authHeader), $matches)) {
+            return trim($matches[1]);
         }
         
         return null;

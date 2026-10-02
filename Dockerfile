@@ -37,6 +37,9 @@ COPY --from=frontend-builder /app/dist /var/www/html
 # Copy entire backend directory to /var/www/backend
 COPY backend /var/www/backend
 
+# Copy database schema directory to /var/www/database
+COPY database /var/www/database
+
 # Configure Apache VirtualHost with /api Alias pointing to /var/www/backend/api
 RUN printf '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html\n\
