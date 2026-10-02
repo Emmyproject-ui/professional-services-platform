@@ -34,25 +34,42 @@ WORKDIR /var/www/html
 # Copy built React static frontend files into Apache root
 COPY --from=frontend-builder /app/dist /var/www/html
 
-# Copy backend PHP API into /var/www/html/api
-COPY backend /var/www/html/api
+# Copy entire backend directory to /var/www/backend
+COPY backend /var/www/backend
 
-# Root .htaccess: SPA routing for React — BUT exclude /api paths so PHP is served
+# Configure Apache VirtualHost with /api Alias pointing to /var/www/backend/api
+RUN printf '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html\n\
+    Alias /api /var/www/backend/api\n\
+    <Directory /var/www/backend/api>\n\
+        Options -Indexes +FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    <Directory /var/www/html>\n\
+        Options -Indexes +FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>\n' > /etc/apache2/sites-available/000-default.conf
+
+# Root .htaccess: SPA routing for React — exclude /api paths so PHP is served
 RUN printf '<IfModule mod_rewrite.c>\n\
   RewriteEngine On\n\
   RewriteBase /\n\
-  # Do NOT rewrite /api requests - let Apache serve PHP files directly\n\
-  RewriteRule ^api(/.*)?$ - [L]\n\
-  # For all other paths: if not a real file or directory, serve index.html (React SPA)\n\
+  RewriteCond %%{REQUEST_URI} ^/api [NC]\n\
+  RewriteRule ^ - [L]\n\
   RewriteCond %%{REQUEST_FILENAME} !-f\n\
   RewriteCond %%{REQUEST_FILENAME} !-d\n\
   RewriteRule ^ index.html [L]\n\
-</IfModule>' > /var/www/html/.htaccess
+</IfModule>\n' > /var/www/html/.htaccess
 
 # Copy entrypoint script to dynamically listen on Render's assigned $PORT
 COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+RUN sed -i 's/\r$//' /usr/local/bin/start.sh && chmod +x /usr/local/bin/start.sh
 
 EXPOSE 80 10000
 
+
 CMD ["/usr/local/bin/start.sh"]
+
