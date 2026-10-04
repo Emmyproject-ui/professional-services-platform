@@ -44,13 +44,21 @@ class Database {
 
         } catch (PDOException $e) {
             error_log("Database Connection Error: " . $e->getMessage());
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Database connection failed: ' . $e->getMessage(),
-                'error'   => 'DATABASE_CONNECTION_ERROR'
-            ]);
-            exit;
+
+            // Only send HTTP response when running as a web request, not CLI
+            if (php_sapi_name() !== 'cli') {
+                http_response_code(500);
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Database connection failed: ' . $e->getMessage(),
+                    'error'   => 'DATABASE_CONNECTION_ERROR'
+                ]);
+                exit;
+            }
+
+            // For CLI (init_db, create_admin), throw so callers can handle it
+            throw new \RuntimeException('Database connection failed: ' . $e->getMessage(), 0, $e);
         }
     }
 

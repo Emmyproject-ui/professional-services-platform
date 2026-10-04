@@ -1,6 +1,9 @@
 <?php
 /**
  * Environment Configuration Loader
+ * Priority: .env file > system environment variables
+ * This ensures our baked-in / start.sh-written values always win,
+ * even if Render has stale / wrong env vars set in its dashboard.
  */
 
 function loadEnv($path) {
@@ -22,26 +25,27 @@ function loadEnv($path) {
             $key = trim($key);
             $value = trim($value);
             
-            // Remove quotes if present
-            $value = trim($value, '"\'');
+            // Remove surrounding quotes if present
+            $value = trim($value, "\"'");
             
-            // Set environment variable
-            if (!array_key_exists($key, $_ENV)) {
-                $_ENV[$key] = $value;
-                putenv("{$key}={$value}");
-            }
+            // .env file ALWAYS wins — overwrite whatever is in $_ENV / getenv
+            $_ENV[$key] = $value;
+            putenv("{$key}={$value}");
         }
     }
 }
 
-// Also copy existing system environment variables (from Docker/Render) into $_ENV
-foreach (['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_SSL', 'JWT_SECRET', 'JWT_EXPIRATION', 'FRONTEND_URL', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'ADMIN_NAME'] as $var) {
+// Step 1: seed $_ENV from system environment (Render / Docker env vars)
+foreach (['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_SSL',
+          'JWT_SECRET', 'JWT_EXPIRATION', 'FRONTEND_URL',
+          'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'ADMIN_NAME'] as $var) {
     $val = getenv($var);
-    if ($val !== false && !isset($_ENV[$var])) {
+    if ($val !== false) {
         $_ENV[$var] = $val;
     }
 }
 
-// Load .env file (for local development)
+// Step 2: load .env file — OVERWRITES system env vars so the file always wins.
+// start.sh writes the correct Aiven credentials into /var/www/backend/.env
+// at container boot, so this always reflects the true production config.
 loadEnv(__DIR__ . '/../.env');
-
