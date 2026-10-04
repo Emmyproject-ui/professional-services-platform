@@ -1,0 +1,72 @@
+{
+  "name": "professional-services-platform-desktop",
+  "version": "1.0.0",
+  "description": "Professional Services Platform — Desktop App",
+  "main": "main.js",
+  "author": "Professional Services Platform",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --x64",
+    "build:portable": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64",
+    "build:dir": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win dir --x64",
+    "package": "electron-packager . \"Professional Services Platform\" --platform=win32 --arch=x64 --out=dist-packager --overwrite --icon=assets/icon.ico --app-version=1.0.0 --ignore=dist-packager --ignore=dist-electron --ignore=.git",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-packager": "^17.1.2",
+    "png-to-ico": "^3.0.2"
+  },
+  "build": {
+    "appId": "com.professionalservices.platform",
+    "productName": "Professional Services Platform",
+    "copyright": "Copyright © 2024 Professional Services Platform",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "forceCodeSigning": false,
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.jpg",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Professional Services Platform",
+      "installerIcon": "assets/icon.jpg",
+      "uninstallerIcon": "assets/icon.jpg"
+    },
+    "portable": {
+      "artifactName": "ProfessionalServicesPlatform-Portable.exe"
+    }
+  }
+}
